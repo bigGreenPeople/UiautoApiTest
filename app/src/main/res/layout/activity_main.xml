@@ -47,7 +47,7 @@
 <!--        app:layout_constraintTop_toTopOf="parent" />-->
     <EditText
         android:id="@+id/edit_test"
-        android:text="ws://192.168.124.7:8765"
+        android:text="ws://192.168.1.32:9873"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 </LinearLayout>

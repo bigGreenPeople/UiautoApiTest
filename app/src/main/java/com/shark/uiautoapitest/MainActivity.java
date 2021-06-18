@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.shark.context.ContextUtils;
 import com.shark.socket.JWebSocketClient;
+import com.shark.socket.WebSocketMessage;
+import com.shark.tools.ScreenShot;
 import com.shark.view.ViewInfo;
 
 import java.net.URI;
@@ -49,13 +51,20 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            mJWebSocketClient.sendMessage("test111111111fffff");
+//            mJWebSocketClient.sendMessage("test111111111fffff");
+            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
+            WebSocketMessage imgMessage = WebSocketMessage.createImgMessage("myid007", activityScreenBytes);
+            mJWebSocketClient.send(activityScreenBytes);
         });
 
 
         jumpButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, UiActivity.class);
-            startActivity(intent);
+//            Intent intent = new Intent(this, UiActivity.class);
+//            startActivity(intent);
+            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
+            String s = new String(activityScreenBytes);
+            WebSocketMessage textMessage = WebSocketMessage.createTextMessage("myid007", "dsadsasad");
+            mJWebSocketClient.send(textMessage);
         });
     }
 
@@ -72,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (mJWebSocketClient.isOpen()){
+        if (mJWebSocketClient.isOpen()) {
             Toast.makeText(this, "连接成功", Toast.LENGTH_LONG).show();
-        }else
+        } else
             Toast.makeText(this, "连接失败!!!", Toast.LENGTH_LONG).show();
 //        if (!mJWebSocketClient.isClosed()) {
 //            Toast.makeText(this, "连接成功", Toast.LENGTH_LONG).show();

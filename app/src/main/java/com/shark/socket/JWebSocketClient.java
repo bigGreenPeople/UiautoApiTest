@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
+import com.google.gson.Gson;
 import com.shark.context.ContextUtils;
 import com.shark.context.RunUiInterface;
 
@@ -56,6 +57,12 @@ public class JWebSocketClient extends WebSocketClient {
         contextUtils.runOnUiThread(() -> {
             mHandler = new Handler();
         });
+    }
+
+    public void send(WebSocketMessage webSocketMessage) {
+        String json = new Gson().toJson(webSocketMessage);
+        Log.i(TAG, "send: " + json);
+        this.send(json);
     }
 
     @Override
