@@ -9,6 +9,7 @@ import android.view.View;
 import com.google.gson.Gson;
 import com.shark.context.ContextUtils;
 import com.shark.context.RunUiInterface;
+import com.shark.signal.IRecvListener;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -19,6 +20,8 @@ public class JWebSocketClient extends WebSocketClient {
     public final static String TAG = "SharkChilli";
     private static final long HEART_BEAT_RATE = 10 * 1000;//每隔10秒进行一次对长连接的心跳检测
     private Handler mHandler;
+
+    private IRecvListener mIRecvListener;
 
     private Runnable heartBeatRunnable = new Runnable() {
         @Override
@@ -51,9 +54,11 @@ public class JWebSocketClient extends WebSocketClient {
         }.start();
     }
 
-    public JWebSocketClient(URI serverUri) {
+    public JWebSocketClient(URI serverUri, IRecvListener iRecvListener) {
         super(serverUri);
         ContextUtils contextUtils = ContextUtils.getInstance();
+        this.mIRecvListener = iRecvListener;
+
         contextUtils.runOnUiThread(() -> {
             mHandler = new Handler();
         });
@@ -74,6 +79,7 @@ public class JWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         Log.e(TAG, "onMessage:" + message);
+        mIRecvListener.recvMessage(message);
     }
 
     @Override

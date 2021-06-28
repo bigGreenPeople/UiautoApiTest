@@ -13,9 +13,12 @@ public class WebSocketMessage {
     //字节数组数据
     private byte[] dataBuf;
 
-    public enum Type {
+    public static enum Type {
         TEXT,
-        IMG
+        LAYOUT,
+        IMG,
+        GET_LAYOUT,
+        GET_LAYOUT_IMG,
     }
 
     private WebSocketMessage() {
@@ -41,7 +44,16 @@ public class WebSocketMessage {
         return webSocketMessage;
     }
 
-    public static WebSocketMessage createMessage(String id, Type type, String message,byte[] dataBuf) {
+    public static WebSocketMessage createLayoutMessage(String id, String message) {
+        WebSocketMessage webSocketMessage = new WebSocketMessage();
+
+        webSocketMessage.setId(id);
+        webSocketMessage.setMessage(message);
+        webSocketMessage.setType(Type.LAYOUT);
+        return webSocketMessage;
+    }
+
+    public static WebSocketMessage createMessage(String id, Type type, String message, byte[] dataBuf) {
         WebSocketMessage webSocketMessage = new WebSocketMessage();
 
         webSocketMessage.setId(id);

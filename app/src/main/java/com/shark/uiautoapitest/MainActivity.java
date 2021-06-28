@@ -19,27 +19,34 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.shark.context.ContextUtils;
+import com.shark.signal.IRecvListener;
 import com.shark.socket.JWebSocketClient;
 import com.shark.socket.WebSocketMessage;
 import com.shark.tools.ScreenShot;
 import com.shark.view.ViewInfo;
+import com.shark.view.ViewManager;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements IRecvListener {
     private Button mButton;
     private Button jumpButton;
     private JWebSocketClient mJWebSocketClient;
     private EditText mEditText;
 
     public final static String TAG = "SharkChilli";
+    private ContextUtils mContextUtils;
+    private ViewManager mViewManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ContextUtils instance = ContextUtils.getInstance(getClassLoader());
+        mContextUtils = ContextUtils.getInstance(getClassLoader());
+        mViewManager = ViewManager.getInstance(getClassLoader());
+
         setContentView(R.layout.activity_main);
         mEditText = findViewById(R.id.edit_test);
         mButton = findViewById(R.id.test);
@@ -57,13 +64,10 @@ public class MainActivity extends AppCompatActivity {
             mJWebSocketClient.send(activityScreenBytes);
         });
 
-
         jumpButton.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, UiActivity.class);
-//            startActivity(intent);
-            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
-            String s = new String(activityScreenBytes);
-            WebSocketMessage textMessage = WebSocketMessage.createTextMessage("myid007", "dsadsasad");
+            Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
+            String activitysLayoutInfo = new Gson().toJson(activitysLayout);
+            WebSocketMessage textMessage = WebSocketMessage.createLayoutMessage("0", activitysLayoutInfo);
             mJWebSocketClient.send(textMessage);
         });
     }
@@ -71,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
     public void connect(View view) {
         String text = mEditText.getText().toString();
         URI uri = URI.create(text);
-        mJWebSocketClient = new JWebSocketClient(uri);
+        mJWebSocketClient = new JWebSocketClient(uri, this);
+
         if (mJWebSocketClient != null) {
             try {
                 mJWebSocketClient.connectBlocking();
@@ -93,35 +98,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public ViewInfo getViewInfo(View view) {
-        ViewInfo viewInfo = new ViewInfo();
-
-        viewInfo.setId(view.getId());
-        viewInfo.setClassName(view.getClass().getName());
-        viewInfo.setEnabled(view.isEnabled());
-        viewInfo.setShown(view.isShown());
-
-        if (view instanceof TextView)
-            viewInfo.setText(((TextView) view).getText().toString());
-
-        if (view instanceof ViewGroup) {
-            ArrayList<ViewInfo> childList = new ArrayList<>();
-
-            ViewGroup vp = (ViewGroup) view;
-
-            for (int i = 0; i < vp.getChildCount(); i++) {
-                View viewchild = vp.getChildAt(i);
-                ViewInfo childViewInfo = getViewInfo(viewchild);
-                childList.add(childViewInfo);
-            }
-            viewInfo.setChildList(childList);
-        }
-
-        return viewInfo;
-    }
-
     public void jumpUsb(View view) {
         Intent intent = new Intent(this, UsbTestActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void recvMessage(String message) {
+        WebSocketMessage webSocketMessage = new Gson().fromJson(message, WebSocketMessage.class);
+        if (WebSocketMessage.Type.GET_LAYOUT_IMG.equals(webSocketMessage.getType())) {
+            if (mJWebSocketClient == null) {
+                Toast.makeText(MainActivity.this, "mJWebSocketClient is null", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
+            WebSocketMessage imgMessage = WebSocketMessage.createImgMessage("0", activityScreenBytes);
+            mJWebSocketClient.send(activityScreenBytes);
+        } else if (WebSocketMessage.Type.GET_LAYOUT.equals(webSocketMessage.getType())) {
+            Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
+            String activitysLayoutInfo = new Gson().toJson(activitysLayout);
+            WebSocketMessage textMessage = WebSocketMessage.createLayoutMessage("0", activitysLayoutInfo);
+            mJWebSocketClient.send(textMessage);
+        }
     }
 }
