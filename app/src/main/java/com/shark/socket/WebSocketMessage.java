@@ -19,6 +19,7 @@ public class WebSocketMessage {
         IMG,
         GET_LAYOUT,
         GET_LAYOUT_IMG,
+        GET_LAYOUT_IMG_END,
     }
 
     private WebSocketMessage() {
@@ -62,6 +63,10 @@ public class WebSocketMessage {
         webSocketMessage.setType(type);
 
         return webSocketMessage;
+    }
+
+    public static WebSocketMessage createMessage(Type type) {
+        return createMessage("0", type, "", null);
     }
 
     public String getId() {

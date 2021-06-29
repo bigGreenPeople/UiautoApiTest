@@ -123,6 +123,9 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
                 byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(activity);
                 mJWebSocketClient.send(activityScreenBytes);
             });
+            // 发送完毕
+            WebSocketMessage textMessage = WebSocketMessage.createMessage(WebSocketMessage.Type.GET_LAYOUT_IMG_END);
+            mJWebSocketClient.send(textMessage);
         } else if (WebSocketMessage.Type.GET_LAYOUT.equals(webSocketMessage.getType())) {
             Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
             String activitysLayoutInfo = new Gson().toJson(activitysLayout);
