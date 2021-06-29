@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
         mButton = findViewById(R.id.test);
         jumpButton = findViewById(R.id.test2);
 
+//        connect("ws://192.168.124.7:9873");
         mButton.setOnClickListener(v -> {
             if (mJWebSocketClient == null) {
                 Toast.makeText(MainActivity.this, "mJWebSocketClient is null", Toast.LENGTH_LONG).show();
@@ -65,15 +66,22 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
         });
 
         jumpButton.setOnClickListener(v -> {
-            Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
-            String activitysLayoutInfo = new Gson().toJson(activitysLayout);
-            WebSocketMessage textMessage = WebSocketMessage.createLayoutMessage("0", activitysLayoutInfo);
-            mJWebSocketClient.send(textMessage);
+//            Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
+//            String activitysLayoutInfo = new Gson().toJson(activitysLayout);
+//            WebSocketMessage textMessage = WebSocketMessage.createLayoutMessage("0", activitysLayoutInfo);
+//            mJWebSocketClient.send(textMessage);
+            Intent intent = new Intent(MainActivity.this, UiActivity.class);
+            startActivity(intent);
         });
     }
 
     public void connect(View view) {
         String text = mEditText.getText().toString();
+        connect(text);
+
+    }
+
+    private void connect(String text) {
         URI uri = URI.create(text);
         mJWebSocketClient = new JWebSocketClient(uri, this);
 
@@ -94,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
 //            Toast.makeText(this, "连接成功", Toast.LENGTH_LONG).show();
 //        } else
 //            Toast.makeText(this, "连接失败!!!", Toast.LENGTH_LONG).show();
-
     }
 
 
@@ -112,9 +119,10 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
                 return;
             }
 
-            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
-            WebSocketMessage imgMessage = WebSocketMessage.createImgMessage("0", activityScreenBytes);
-            mJWebSocketClient.send(activityScreenBytes);
+            mContextUtils.getRunningActivitys().forEach(activity -> {
+                byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(activity);
+                mJWebSocketClient.send(activityScreenBytes);
+            });
         } else if (WebSocketMessage.Type.GET_LAYOUT.equals(webSocketMessage.getType())) {
             Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
             String activitysLayoutInfo = new Gson().toJson(activitysLayout);

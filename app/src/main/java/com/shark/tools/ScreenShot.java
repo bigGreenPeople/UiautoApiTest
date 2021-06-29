@@ -26,7 +26,7 @@ public class ScreenShot {
         Rect frame = new Rect();
         activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
         int statusBarHeight = frame.top;
-        Log.i(TAG, "" + statusBarHeight);
+//        Log.i(TAG, "" + statusBarHeight);
 
         // 获取屏幕长和高
         int width = activity.getWindowManager().getDefaultDisplay().getWidth();
