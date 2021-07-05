@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
 //            String activitysLayoutInfo = new Gson().toJson(activitysLayout);
 //            WebSocketMessage textMessage = WebSocketMessage.createLayoutMessage("0", activitysLayoutInfo);
 //            mJWebSocketClient.send(textMessage);
-            Intent intent = new Intent(MainActivity.this, UiActivity.class);
+            Intent intent = new Intent(MainActivity.this, OvActivity.class);
             startActivity(intent);
         });
     }

@@ -20,6 +20,7 @@
         </activity>
         <activity android:name=".UiActivity" />
         <activity android:name=".UsbTestActivity" />
+        <activity android:name=".OvActivity"/>
     </application>
 
 </manifest>
