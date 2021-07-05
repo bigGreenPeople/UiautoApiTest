@@ -28,6 +28,10 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="notitle">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="SelectButton" parent="LeftTitle">
         <item name="android:gravity">center</item>
     </style>
