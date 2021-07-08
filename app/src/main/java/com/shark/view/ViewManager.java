@@ -72,8 +72,10 @@ public class ViewManager {
         if (view.getContentDescription() != null)
             viewInfo.setDescription(view.getContentDescription().toString());
 
-        if (view instanceof TextView)
+        if (view instanceof TextView) {
             viewInfo.setText(((TextView) view).getText().toString());
+            Log.i("SharkChilli", "getViewInfo: " + ((TextView) view).getText().toString());
+        }
 
         if (view instanceof ViewGroup) {
             ArrayList<ViewInfo> childList = new ArrayList<>();
@@ -82,7 +84,7 @@ public class ViewManager {
 
             for (int i = 0; i < vp.getChildCount(); i++) {
                 View viewchild = vp.getChildAt(i);
-                ViewInfo childViewInfo = getViewInfo(viewchild,statusBarHeight);
+                ViewInfo childViewInfo = getViewInfo(viewchild, statusBarHeight);
                 childList.add(childViewInfo);
             }
             viewInfo.setChildList(childList);

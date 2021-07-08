@@ -3,6 +3,9 @@ package com.shark.uiautoapitest;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -12,6 +15,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,6 +31,8 @@ import com.shark.tools.ScreenShot;
 import com.shark.view.ViewInfo;
 import com.shark.view.ViewManager;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,17 +59,59 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
         mButton = findViewById(R.id.test);
         jumpButton = findViewById(R.id.test2);
 
+//        WindowManager windowManager = getWindowManager();
+//        WindowMetrics currentWindowMetrics = windowManager.getCurrentWindowMetrics();
 //        connect("ws://192.168.124.7:9873");
         mButton.setOnClickListener(v -> {
-            if (mJWebSocketClient == null) {
-                Toast.makeText(MainActivity.this, "mJWebSocketClient is null", Toast.LENGTH_LONG).show();
-                return;
-            }
+//            if (mJWebSocketClient == null) {
+//                Toast.makeText(MainActivity.this, "mJWebSocketClient is null", Toast.LENGTH_LONG).show();
+//                return;
+//            }
+//
+////            mJWebSocketClient.sendMessage("test111111111fffff");
+//            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
+//            WebSocketMessage imgMessage = WebSocketMessage.createImgMessage("myid007", activityScreenBytes);
+//            mJWebSocketClient.send(activityScreenBytes);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder = alertDialogBuilder.setTitle("标题").setMessage("内容");
 
-//            mJWebSocketClient.sendMessage("test111111111fffff");
-            byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
-            WebSocketMessage imgMessage = WebSocketMessage.createImgMessage("myid007", activityScreenBytes);
-            mJWebSocketClient.send(activityScreenBytes);
+            alertDialogBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(MainActivity.this, "这是确定按钮", Toast.LENGTH_SHORT).show();
+                }
+            }).setNegativeButton("取消", new DialogInterface.OnClickListener() {//添加取消
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Toast.makeText(MainActivity.this, "这是取消按钮", Toast.LENGTH_SHORT).show();
+                }
+            }).setNeutralButton("普通按钮", new DialogInterface.OnClickListener() {//添加普通按钮
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Toast.makeText(MainActivity.this, "这是普通按钮按钮", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            AlertDialog alertDialog = alertDialogBuilder.setTitle("标题").setMessage("内容").create();
+            alertDialog.show();
+
+            try {
+                Class WindowManagerGlobalClass = getClassLoader().loadClass("android.view.WindowManagerGlobal");
+                Method getInstance = WindowManagerGlobalClass.getDeclaredMethod("getInstance");
+                getInstance.setAccessible(true);
+                Object mGlobal = getInstance.invoke(null);
+
+                Field mViewsField = WindowManagerGlobalClass.getDeclaredField("mViews");
+                mViewsField.setAccessible(true);
+                ArrayList<View> mViews = (ArrayList<View>) mViewsField.get(mGlobal);
+                Log.i(TAG, "mViews size is:"+mViews.size());
+                mViews.forEach(view -> {
+                    int statusBarHeight = mViewManager.getStatusBarHeight(MainActivity.this);
+                    mViewManager.getViewInfo(view,statusBarHeight);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "onCreate: ", e);
+            }
         });
 
         jumpButton.setOnClickListener(v -> {
