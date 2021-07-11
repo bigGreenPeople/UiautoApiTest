@@ -83,11 +83,30 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
             }).setNegativeButton("取消", new DialogInterface.OnClickListener() {//添加取消
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    Map<String, ViewInfo> activitysLayout = mViewManager.getActivitysLayout(mContextUtils.getRunningActivitys());
+                    String activitysLayoutInfo = new Gson().toJson(activitysLayout);
+                    activitysLayout.forEach((key, val) -> {
+                        Log.i(TAG, key + " : " + val);
+
+                    });
                     Toast.makeText(MainActivity.this, "这是取消按钮", Toast.LENGTH_SHORT).show();
                 }
             }).setNeutralButton("普通按钮", new DialogInterface.OnClickListener() {//添加普通按钮
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        ArrayList<View> windowViews = mViewManager.getWindowsView(MainActivity.this);
+                        for (int j = 0; j < windowViews.size(); j++) {
+                            byte[] activityScreenBytes = ScreenShot.getViewScreenBytes(windowViews.get(j));
+                            mJWebSocketClient.send(activityScreenBytes);
+//                            ScreenShot.shoot(mViews.get(j), "sdcard/window" + j + ".png");
+
+                        }
+
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "onCreate: ", e);
+                    }
                     Toast.makeText(MainActivity.this, "这是普通按钮按钮", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -95,23 +114,6 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
             AlertDialog alertDialog = alertDialogBuilder.setTitle("标题").setMessage("内容").create();
             alertDialog.show();
 
-            try {
-                Class WindowManagerGlobalClass = getClassLoader().loadClass("android.view.WindowManagerGlobal");
-                Method getInstance = WindowManagerGlobalClass.getDeclaredMethod("getInstance");
-                getInstance.setAccessible(true);
-                Object mGlobal = getInstance.invoke(null);
-
-                Field mViewsField = WindowManagerGlobalClass.getDeclaredField("mViews");
-                mViewsField.setAccessible(true);
-                ArrayList<View> mViews = (ArrayList<View>) mViewsField.get(mGlobal);
-                Log.i(TAG, "mViews size is:"+mViews.size());
-                mViews.forEach(view -> {
-                    int statusBarHeight = mViewManager.getStatusBarHeight(MainActivity.this);
-                    mViewManager.getViewInfo(view,statusBarHeight);
-                });
-            } catch (Exception e) {
-                Log.e(TAG, "onCreate: ", e);
-            }
         });
 
         jumpButton.setOnClickListener(v -> {
@@ -168,10 +170,27 @@ public class MainActivity extends AppCompatActivity implements IRecvListener {
                 return;
             }
 
-            mContextUtils.getRunningActivitys().forEach(activity -> {
-                byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(activity);
-                mJWebSocketClient.send(activityScreenBytes);
-            });
+//            mContextUtils.getRunningActivitys().forEach(activity -> {
+//                byte[] activityScreenBytes = ScreenShot.getActivityScreenBytes(activity);
+//                mJWebSocketClient.send(activityScreenBytes);
+//            });
+            try {
+                ArrayList<View> windowViews = mViewManager.getWindowsView(MainActivity.this);
+                for (int j = 0; j < windowViews.size(); j++) {
+                    byte[] activityScreenBytes = new byte[]{};
+
+                    if (j==0){
+                        activityScreenBytes = ScreenShot.getActivityScreenBytes(MainActivity.this);
+                    }else {
+                        activityScreenBytes = ScreenShot.getViewScreenBytes(windowViews.get(j));
+                    }
+                    mJWebSocketClient.send(activityScreenBytes);
+//                            ScreenShot.shoot(mViews.get(j), "sdcard/window" + j + ".png");
+
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "onCreate: ", e);
+            }
             // 发送完毕
             WebSocketMessage textMessage = WebSocketMessage.createMessage(WebSocketMessage.Type.GET_LAYOUT_IMG_END);
             mJWebSocketClient.send(textMessage);
